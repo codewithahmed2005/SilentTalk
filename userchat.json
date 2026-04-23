@@ -1,0 +1,16 @@
+{
+  "users": {
+    "1893145184": {
+      "id": "1893145184",
+      "name": "Ahmed",
+      "username": "codewithahmed",
+      "about": "",
+      "password": "dc563b61561445a84bfb557da2fb0ee6f11dc8e9c344f46c7fdd7b365b414805",
+      "profile_image": "1893145184_6ecd5bc48f104ebdaf076e1705f6ece0.jpg",
+      "contacts": [],
+      "theme": "light",
+      "created_at": "2026-04-23T04:48:40.079006"
+    }
+  },
+  "chats": {}
+}
