@@ -14,14 +14,30 @@ from werkzeug.utils import secure_filename
 
 # ─── Config ─────────────────────────────────────────────────────
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-    "http://localhost:5500",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000"
-])
-CORS(app, supports_credentials=True)
+
+# CORS: Allow GitHub Pages + local development
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://codewithahmed2005.github.io",
+            "http://localhost:8000",
+            "http://localhost:8080",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+# Handle preflight OPTIONS requests for all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'https://codewithahmed2005.github.io')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    return response
+
 app.config['SECRET_KEY'] = 'change-this-to-a-random-secret-key'
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
@@ -176,12 +192,10 @@ def delete_account():
     db = read_db()
     uid = request.current_user
 
-    # Remove from all contact lists
     for u in db['users'].values():
         if uid in u['contacts']:
             u['contacts'].remove(uid)
 
-    # Delete all chats involving this user
     to_delete = [cid for cid, c in db['chats'].items() if uid in c['participants']]
     for cid in to_delete:
         del db['chats'][cid]
@@ -379,7 +393,7 @@ def serve_upload(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # ─── Run ────────────────────────────────────────────────────────
-init_db()
+init_db()  # Initialize DB on module load (for Gunicorn)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
